@@ -24,7 +24,7 @@ import Task exposing (Task)
 -}
 on : String -> Decoder msg -> Sub msg
 on eventName decoder =
-  subscription (MySub { eventName = eventName, decoder = decoder })
+  subscription (MySub eventName decoder)
 
 
 {-| Send a value over ipcRenderer
@@ -35,12 +35,12 @@ send eventName value =
 
 
 type MySub msg
-  = MySub { eventName : String, decoder : Decoder msg }
+  = MySub String (Decoder msg)
 
 
 subMap : (a -> b) -> MySub a -> MySub b
-subMap mapper (MySub sub) =
-  MySub { sub | decoder = Decode.map mapper sub.decoder }
+subMap mapper (MySub eventName decoder) =
+  MySub eventName <| Decode.map mapper decoder
 
 
 type MyCmd msg
@@ -54,7 +54,6 @@ cmdMap _ (Send eventName value) =
 
 type alias State msg =
   Dict String (Watcher msg)
-
 
 
 type alias Watcher msg =
@@ -78,9 +77,9 @@ categorizeHelp subs subDict =
     [] ->
       subDict
 
-    MySub sub :: rest ->
+    MySub eventName decoder :: rest ->
       categorizeHelp rest <|
-        Dict.update sub.eventName (categorizeHelpHelp sub.decoder) subDict
+        Dict.update eventName (categorizeHelpHelp decoder) subDict
 
 
 categorizeHelpHelp : a -> Maybe (List a) -> Maybe (List a)
