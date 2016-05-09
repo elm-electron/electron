@@ -109,7 +109,7 @@ andThen =
 
 
 onWatcherEffects
-  : Platform.Router msg Msg
+  : Router msg Msg
   -> List (MySub msg)
   -> Dict String (Watcher msg)
   -> Task Never (Dict String (Watcher msg))
