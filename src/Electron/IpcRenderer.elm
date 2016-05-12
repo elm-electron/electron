@@ -3,11 +3,7 @@ effect module Electron.IpcRenderer where { subscription = MySub, command = MyCmd
   , send
   )
 
-{-| This library lets you listen to global mouse events. This is useful
-for a couple tricky scenarios including:
-  - Detecting a "click" outside the current component.
-  - Supporting drag-and-drop interactions.
-
+{-|
 # Subscriptions
 @docs on, send
 -}
