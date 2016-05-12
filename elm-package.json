@@ -6,7 +6,10 @@
     "source-directories": [
         "./src"
     ],
-    "exposed-modules": ["Electron.IpcRenderer"],
+    "exposed-modules": [
+      "Electron.IpcRenderer",
+      "Electron.Screen"
+    ],
     "native-modules": true,
     "dependencies": {
         "elm-lang/core": "4.0.0 <= v < 5.0.0"
