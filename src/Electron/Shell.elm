@@ -1,8 +1,45 @@
-effect module Shell where { command = MyCmd } exposing (..)
+effect module Shell
+    where { command = MyCmd }
+    exposing
+        ( showItemInFolder
+        , openItem
+        , openExternal
+        , moveItemToTrash
+        , beep
+        )
 
 import Task exposing (Task)
 import Platform exposing (Router)
 import Native.Shell
+
+
+-- PUBLIC CMDS
+
+
+showItemInFolder : String -> Cmd msg
+showItemInFolder fullPath =
+    command <| ShowItemInFolder fullPath
+
+
+openItem : String -> Cmd msg
+openItem fullPath =
+    command <| OpenItem fullPath
+
+
+openExternal : String -> Cmd msg
+openExternal url =
+    command <| OpenExternal url
+
+
+moveItemToTrash : String -> Cmd msg
+moveItemToTrash fullPath =
+    command <| MoveItemToTrash fullPath
+
+
+beep : Cmd msg
+beep =
+    command Beep
+
 
 
 -- NATIVE WRAPPERS
