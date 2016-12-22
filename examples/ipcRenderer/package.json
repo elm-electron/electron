@@ -1,0 +1,32 @@
+{
+  "name": "elm-electron-ipc",
+  "version": "0.1.0",
+  "description": "Example of how to use elm-electron for IPC communication",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron main.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/elm-electron/electron.git"
+  },
+  "keywords": [
+    "Electron",
+    "Elm"
+  ],
+  "author": "oleiade",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/elm-electron/electron/issues"
+  },
+  "homepage": "https://github.com/elm-electron/electron#readme",
+  "devDependencies": {
+    "devtron": "^1.4.0",
+    "eslint": "^3.11.1",
+    "eslint-config-google": "^0.7.1",
+    "electron-debug": "^1.1.0"
+  },
+  "dependencies": {
+    "electron-prebuilt": "^0.36.0"
+  }
+}
