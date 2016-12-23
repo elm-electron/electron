@@ -1,4 +1,4 @@
-effect module Shell
+effect module Electron.Shell
     where { command = MyCmd }
     exposing
         ( showItemInFolder

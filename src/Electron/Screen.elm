@@ -14,7 +14,8 @@ effect module Electron.Screen where { subscription = MySub } exposing
 -}
 
 import Platform exposing (Router)
-import Json.Decode as Decode exposing (Decoder, Value, (:=))
+import Json.Decode as Decode exposing (Decoder, Value, andThen)
+import Json.Decode.Pipeline exposing (decode, required, optional, hardcoded)
 import Process
 import Task exposing (Task)
 import Native.Screen
@@ -27,10 +28,6 @@ displays toMsg =
   subscription <| Displays toMsg
 
 
-(|:) : Decoder (a -> b) -> Decoder a -> Decoder b
-(|:) =
-  Decode.object2 (<|)
-
 
 {-| Denotes whether a display supports touch interactions and whether that
 capability is even known.
@@ -40,6 +37,14 @@ type TouchSupport
   | Unavailable
   | Unknown
 
+customDecoder decoder toResult =
+   Decode.andThen
+     (\a ->
+           case toResult a of
+              Ok b -> Decode.succeed b
+              Err err -> Decode.fail err
+     )
+     decoder
 
 decodeTouchSupport : Decoder TouchSupport
 decodeTouchSupport =
@@ -55,7 +60,7 @@ decodeTouchSupport =
         _ ->
           Err ("Unknown TouchSupport type: " ++ value)
   in
-    Decode.customDecoder Decode.string parse
+    customDecoder Decode.string parse
 
 
 {-| Describes an area of the screen in pixels
@@ -70,11 +75,11 @@ type alias Rect =
 
 decodeRect : Decoder Rect
 decodeRect =
-  Decode.succeed Rect
-    |: ("x" := Decode.int)
-    |: ("y" := Decode.int)
-    |: ("width" := Decode.int)
-    |: ("height" := Decode.int)
+  decode Rect
+    |> required "x" Decode.int
+    |> required "y" Decode.int
+    |> required "width" Decode.int
+    |> required "height" Decode.int
 
 
 {-| All available information about a user's display
@@ -92,14 +97,14 @@ type alias Display =
 
 decodeDisplay : Decoder Display
 decodeDisplay =
-  Decode.succeed Display
-    |: ("id" := Decode.int)
-    |: ("rotation" := Decode.int)
-    |: ("scaleFactor" := Decode.float)
-    |: ("touchSupport" := decodeTouchSupport)
-    |: ("bounds" := decodeRect)
-    |: ("workArea" := decodeRect)
-    |: ("workAreaSize" := decodeRect)
+  decode Display
+    |> required "id" Decode.int
+    |> required "rotation" Decode.int
+    |> required "scaleFactor" Decode.float
+    |> required "touchSupport" decodeTouchSupport
+    |> required "bounds" decodeRect
+    |> required "workArea" decodeRect
+    |> required "workAreaSize" decodeRect
 
 
 type alias Watcher a =
@@ -131,11 +136,6 @@ type Msg =
   DisplaysMsg (List Display)
 
 
-andThen : (a -> Task b c) -> Task b a -> Task b c
-andThen =
-  flip Task.andThen
-
-
 onDisplaysEffects
   : Router msg Msg
   -> (List (List Display -> msg))
@@ -152,7 +152,7 @@ onDisplaysEffects router newListeners maybeWatcher =
 
     (subs, Nothing) ->
       Process.spawn (Native.Screen.onDisplaysChanged (Decode.list decodeDisplay) (DisplaysMsg >> Platform.sendToSelf router))
-        |> andThen (\pid -> (Task.succeed (Just (Watcher pid subs))))
+        |> Task.andThen (\pid -> (Task.succeed (Just (Watcher pid subs))))
 
     (subs, Just watcher) ->
       Task.succeed <| Just { watcher | listeners = subs }
@@ -176,7 +176,7 @@ onEffects
   -> Task Never (State msg)
 onEffects router newSubs oldState =
   onDisplaysEffects router (subsToDisplayListeners newSubs) oldState.displays
-    |> andThen (\maybeWatcher -> Task.succeed { oldState | displays = maybeWatcher })
+    |> Task.andThen (\maybeWatcher -> Task.succeed { oldState | displays = maybeWatcher })
 
 
 sendDisplaysMsg : Router msg Msg -> List Display -> (List Display -> msg) -> Task Never ()

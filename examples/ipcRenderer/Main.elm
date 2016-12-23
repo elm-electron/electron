@@ -1,11 +1,12 @@
 import Electron.IpcRenderer as IPC exposing (on, send)
 
-import Html exposing (..)
-import Html.App exposing (program)
+import Html exposing (Html, program, text, button, h2, div)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 import Json.Encode
-import Json.Decode as Decode exposing (Decoder, map, (:=))
+-- import Json.Decode as Decode exposing (Decoder, map, (:=))
+import Json.Decode exposing (int, string, float, nullable, map, Decoder)
+import Json.Decode.Pipeline exposing (decode, required, optional, hardcoded)
 
 
 main =
@@ -47,11 +48,11 @@ type alias TimeResponse =
     }
 
 
-decodeResponse : Decode.Decoder TimeResponse
+decodeResponse : Decoder TimeResponse
 decodeResponse =
-    Decode.object2 TimeResponse
-        ("status" := Decode.string)
-        ("time" := Decode.string)
+    decode TimeResponse
+        |> required "status" string
+        |> required "time" string
 
 
 -- UPDATE
@@ -90,5 +91,5 @@ view model =
 subscriptions : Model -> Sub Msg
 subscriptions model =
   Sub.batch
-  [ IPC.on "time-response" (Decode.map OnResponse decodeResponse)
+  [ IPC.on "time-response" (map OnResponse decodeResponse)
   ]

@@ -101,11 +101,6 @@ type alias Msg =
     }
 
 
-andThen : (a -> Task b c) -> Task b a -> Task b c
-andThen =
-    flip Task.andThen
-
-
 onWatcherEffects :
     Router msg Msg
     -> List (MySub msg)
@@ -116,19 +111,19 @@ onWatcherEffects router newSubs oldState =
         leftStep eventName watcher task =
             watcher.pid
                 |> Process.kill
-                |> andThen (always task)
+                |> Task.andThen (always task)
 
         bothStep eventName watcher decoders task =
             task
-                `Task.andThen` \state ->
-                                Task.succeed (Dict.insert eventName ({ watcher | decoders = decoders }) state)
+                |> Task.andThen (\state ->
+                                Task.succeed (Dict.insert eventName ({ watcher | decoders = decoders }) state))
 
         rightStep eventName decoders task =
             task
-                `Task.andThen` \state ->
+                |> Task.andThen (\state ->
                                 Process.spawn (Native.IpcRenderer.on eventName (Platform.sendToSelf router << Msg eventName))
-                                    `Task.andThen` \pid ->
-                                                    Task.succeed (Dict.insert eventName (Watcher decoders pid) state)
+                                    |> Task.andThen (\pid ->
+                                                    Task.succeed (Dict.insert eventName (Watcher decoders pid) state)))
     in
         Dict.merge leftStep
             bothStep
@@ -158,7 +153,7 @@ onEffects router newCmds newSubs oldState =
                 |> Task.sequence
     in
         runCommands
-            |> andThen (always updatedForWatchers)
+            |> Task.andThen (always updatedForWatchers)
 
 
 onSelfMsg : Router msg Msg -> Msg -> State msg -> Task Never (State msg)
@@ -176,4 +171,4 @@ onSelfMsg router msg state =
                         |> Result.toMaybe
             in
                 Task.sequence (List.filterMap send watcher.decoders)
-                    `Task.andThen` (always (Task.succeed state))
+                    |> Task.andThen ((always (Task.succeed state)))

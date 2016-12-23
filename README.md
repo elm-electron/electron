@@ -2,7 +2,7 @@
 
 Elm-electron is a (work in progress) integration of electron for Elm.
 
-It is at the moment only compatible with Elm 0.17. And exposes a limited subset of the electron api. But it should be enough to get you started!
+At the moment, it exposes a limited subset of the electron api. But it should be enough to get you started!
 
 ## How to
 
@@ -32,7 +32,6 @@ And you should make sure your `elm-package.json` file:
 *   adds the `elm-electron` sources to *source-directories
 *   exposes the `Electron` modules you intend to use
 *   activates the usage of `native-modules`
-*   limits the elm version to <= 0.17
 
 ```json
 "source-directories": [
@@ -43,7 +42,7 @@ And you should make sure your `elm-package.json` file:
     "Electron.IpcRenderer"
 ],
 "native-modules": true,
-"elm-version": "0.17.0 <= v < 0.18.0"
+"elm-version": "0.18.0 <= v < 0.19.0"
 ```
 
 You should be done and ready to rock. For more informations on how to actually use the library, please refer to the `examples/`

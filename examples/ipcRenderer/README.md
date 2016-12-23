@@ -1,7 +1,5 @@
 # ipcRenderer
 
-**Nota** at the moment the module, and thus the examples are only compatible with elm 0.17. We are working on adding 0.18 compatibility.
-
 ## How to
 
 ```bash
